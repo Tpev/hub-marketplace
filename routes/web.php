@@ -28,8 +28,10 @@ Route::middleware(['auth'])->group(function () {
 
 
 // Medical Devices Listing (Accessible to all users)
-Route::get('/', [MedicalDeviceController::class, 'index'])->name('medical_devices.index');
-
+Route::get('/', function () {
+    return view('landing');
+});
+Route::get('/marketplace', [MedicalDeviceController::class, 'index'])->name('medical_devices.index');
 // Medical Device Details (Accessible to all users)
 Route::get('/list/medical_devices/{medical_device}', [MedicalDeviceController::class, 'show'])->name('medical_devices.show');
 
