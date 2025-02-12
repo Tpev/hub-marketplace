@@ -38,6 +38,16 @@
 
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
+		        <!-- Intent Field -->
+        <div class="mt-4">
+            <x-input-label for="intent" :value="__('I am a')" />
+            <select id="intent" name="intent" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                <option value="Buyer" {{ old('intent') == 'Buyer' ? 'selected' : '' }}>Buyer</option>
+                <option value="Seller" {{ old('intent') == 'Seller' ? 'selected' : '' }}>Seller</option>
+                <option value="Both" {{ old('intent') == 'Both' ? 'selected' : '' }}>Both</option>
+            </select>
+            <x-input-error :messages="$errors->get('intent')" class="mt-2" />
+        </div>
 
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
