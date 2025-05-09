@@ -26,6 +26,10 @@ class MedicalDeviceController extends Controller
      */
     public function create()
     {
+		  $user = auth()->user();
+		    if (in_array($user->intent, ['Seller', 'Both']) && !$user->is_subscribed) {
+        return redirect()->route('subscribe.page')->with('error', 'You must subscribe before listing a device.');
+    }
         return view('medical_devices.create');
     }
 
@@ -42,7 +46,7 @@ class MedicalDeviceController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'condition' => 'required|in:new,used,refurbished',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|max:8048',
 			'location' => 'required|string',
             'brand' => 'nullable|string',
         ]);

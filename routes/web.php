@@ -5,12 +5,7 @@ use App\Http\Controllers\MedicalDeviceController;
 use App\Http\Controllers\ContactRequestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])
-         ->name('admin.dashboard');
-});
-
+use App\Http\Controllers\SubscribeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +20,12 @@ Route::middleware(['auth'])->group(function () {
 // 1. Public Routes
 // ----------------------------------------
 
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/dashboard', [AdminController::class, 'index'])
+         ->name('admin.dashboard');
+});
 
 
 // Medical Devices Listing (Accessible to all users)
@@ -60,7 +61,15 @@ Route::middleware(['auth'])->group(function () {
     // Contact Requests
     Route::get('/medical_devices/{medical_device}/contact', [ContactRequestController::class, 'create'])->name('contact_requests.create');
     Route::post('/medical_devices/{medical_device}/contact', [ContactRequestController::class, 'store'])->name('contact_requests.store');
+    
+	// sub
+	Route::get('/subscribe', fn() => view('auth.subscribe'))->name('subscribe.page');
+	Route::post('/api/stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handle']);
+	Route::get('/subscribe/success/{tier}', [SubscribeController::class, 'success'])->name('subscribe.success');
+
+
 });
+
 
 
 // ----------------------------------------
