@@ -20,6 +20,9 @@ use App\Http\Controllers\BuyerInquiryController;
 // ----------------------------------------
 // 1. Public Routes
 // ----------------------------------------
+Route::prefix('admin/blog')->middleware('auth')->name('admin.blog.')->group(function () {
+    Route::resource('/', \App\Http\Controllers\Admin\BlogPostController::class)->parameters(['' => 'blog']);
+});
 
 
 Route::post('/buyer-inquiries', [BuyerInquiryController::class, 'store'])->name('buyer-inquiries.store');
@@ -77,6 +80,8 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
+Route::get('/article/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
 
 
 // ----------------------------------------

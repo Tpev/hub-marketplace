@@ -23,6 +23,7 @@
   gtag('config', 'G-P58WV96PXJ');
 </script>
 <script src="//unpkg.com/alpinejs" defer></script>
+@stack('styles')
 
     </head>
     <body class="font-sans antialiased">
@@ -43,5 +44,7 @@
                 {{ $slot }}
             </main>
         </div>
+		@stack('scripts')
+
     </body>
 </html>
