@@ -21,7 +21,7 @@ use App\Http\Controllers\DeviceInquiryController;
 // ----------------------------------------
 
 Route::post('/device-inquiry', [\App\Http\Controllers\DeviceInquiryController::class, 'store'])
-    ->name('device-inquiry.store')->middleware('auth');
+    ->name('device-inquiry.store');
 
 
 
