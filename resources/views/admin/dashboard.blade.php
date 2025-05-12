@@ -14,6 +14,7 @@
                     ['label' => 'Buyers', 'value' => $kpis['buyers'], 'color' => 'text-blue-600', 'icon' => '🛒'],
                     ['label' => 'Sellers', 'value' => $kpis['sellers'], 'color' => 'text-green-600', 'icon' => '💼'],
                     ['label' => 'Both (Buyer + Seller)', 'value' => $kpis['both'], 'color' => 'text-purple-600', 'icon' => '🔁'],
+					['label' => 'Total Devices Listed', 'value' => $kpis['total_devices'], 'color' => 'text-sky-700', 'icon' => '📦'],
                     ['label' => 'Devices (New)', 'value' => $kpis['new_devices'], 'color' => 'text-green-600', 'icon' => '✨'],
                     ['label' => 'Devices (Used)', 'value' => $kpis['used_devices'], 'color' => 'text-yellow-600', 'icon' => '🔧'],
                     ['label' => 'Devices (Refurbished)', 'value' => $kpis['refurb_devices'], 'color' => 'text-indigo-600', 'icon' => '♻️'],
