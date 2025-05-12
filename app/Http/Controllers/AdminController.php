@@ -19,6 +19,7 @@ class AdminController extends Controller
             'medicalDevices',
             'deviceInquiries as contact_requests_count'
         ])->get();
+$inquiries = \App\Models\BuyerInquiry::latest()->get();
 
 $kpis = [
     'total_users'     => User::count(),
@@ -36,6 +37,7 @@ $kpis = [
 
 
 
-        return view('admin.dashboard', compact('users', 'kpis'));
+        return view('admin.dashboard', compact('users', 'kpis', 'inquiries'));
+
     }
 }

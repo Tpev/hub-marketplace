@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SubscribeController;
 use App\Http\Controllers\DeviceInquiryController;
+use App\Http\Controllers\BuyerInquiryController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -19,6 +20,9 @@ use App\Http\Controllers\DeviceInquiryController;
 // ----------------------------------------
 // 1. Public Routes
 // ----------------------------------------
+
+
+Route::post('/buyer-inquiries', [BuyerInquiryController::class, 'store'])->name('buyer-inquiries.store');
 
 Route::post('/device-inquiry', [\App\Http\Controllers\DeviceInquiryController::class, 'store'])
     ->name('device-inquiry.store')->middleware('auth');

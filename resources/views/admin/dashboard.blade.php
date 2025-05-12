@@ -87,5 +87,20 @@
                 </div>
             </div>
         </div>
+		
+		
+		<div class="mt-12">
+    <h3 class="text-xl font-bold mb-4">Buyer Inquiries</h3>
+    @forelse($inquiries as $inquiry)
+        <div class="border p-4 mb-4 rounded bg-white">
+            <p class="text-sm text-gray-500">{{ $inquiry->created_at->format('Y-m-d H:i') }}</p>
+            <p class="font-semibold">{{ $inquiry->name ?? 'Guest' }} - {{ $inquiry->email ?? 'No email' }}</p>
+            <p class="mt-2 text-gray-700">{{ $inquiry->message }}</p>
+        </div>
+    @empty
+        <p class="text-gray-500">No inquiries yet.</p>
+    @endforelse
+</div>
+
     </div>
 </x-app-layout>
