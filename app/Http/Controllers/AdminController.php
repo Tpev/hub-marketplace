@@ -20,17 +20,19 @@ class AdminController extends Controller
             'deviceInquiries as contact_requests_count'
         ])->get();
 
-        $kpis = [
-            'total_users'     => User::count(),
-            'buyers'          => User::where('intent', 'Buyer')->count(),
-            'sellers'         => User::where('intent', 'Seller')->count(),
-            'both'            => User::where('intent', 'Both')->count(),
-            'new_devices'     => MedicalDevice::where('condition', 'new')->count(),
-            'used_devices'    => MedicalDevice::where('condition', 'used')->count(),
-            'refurb_devices'  => MedicalDevice::where('condition', 'refurbished')->count(),
-            'total_inquiries' => DeviceInquiry::count(),
-            'total_value'     => MedicalDevice::sum('price'),
-        ];
+		$kpis = [
+			'total_users'     => User::count(),
+			'buyers'          => User::where('intent', 'Buyer')->count(),
+			'sellers'         => User::where('intent', 'Seller')->count(),
+			'both'            => User::where('intent', 'Both')->count(),
+			'new_devices'     => MedicalDevice::where('condition', 'new')->count(),
+			'used_devices'    => MedicalDevice::where('condition', 'used')->count(),
+			'refurb_devices'  => MedicalDevice::where('condition', 'refurbished')->count(),
+			'total_inquiries' => DeviceInquiry::count(),
+			'total_value'     => MedicalDevice::sum('price'),
+			'average_price'   => round(MedicalDevice::avg('price'), 2),
+		];
+
 
         return view('admin.dashboard', compact('users', 'kpis'));
     }
