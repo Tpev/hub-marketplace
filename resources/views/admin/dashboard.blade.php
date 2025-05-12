@@ -4,6 +4,45 @@
             {{ __('Admin Dashboard') }}
         </h2>
     </x-slot>
+<!-- KPIs Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-sm text-gray-500">Total Users</p>
+        <p class="text-2xl font-bold text-gray-800">{{ $kpis['total_users'] }}</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-sm text-gray-500">Buyers</p>
+        <p class="text-xl font-bold text-blue-700">{{ $kpis['buyers'] }}</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-sm text-gray-500">Sellers</p>
+        <p class="text-xl font-bold text-green-700">{{ $kpis['sellers'] }}</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-sm text-gray-500">Both (Buyer+Seller)</p>
+        <p class="text-xl font-bold text-purple-700">{{ $kpis['both'] }}</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-sm text-gray-500">Devices (New)</p>
+        <p class="text-xl font-bold text-green-700">{{ $kpis['new_devices'] }}</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-sm text-gray-500">Devices (Used)</p>
+        <p class="text-xl font-bold text-yellow-700">{{ $kpis['used_devices'] }}</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-sm text-gray-500">Devices (Refurbished)</p>
+        <p class="text-xl font-bold text-indigo-700">{{ $kpis['refurb_devices'] }}</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-sm text-gray-500">Total Contact Requests</p>
+        <p class="text-xl font-bold text-red-700">{{ $kpis['total_inquiries'] }}</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+        <p class="text-sm text-gray-500">Total Value of Listings</p>
+        <p class="text-xl font-bold text-gray-800">${{ number_format($kpis['total_value'], 2) }}</p>
+    </div>
+</div>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
