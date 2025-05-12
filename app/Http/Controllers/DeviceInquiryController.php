@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Http\Controllers;
+
 use App\Models\DeviceInquiry;
 use Illuminate\Http\Request;
 
