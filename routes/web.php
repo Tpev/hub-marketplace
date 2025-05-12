@@ -6,7 +6,7 @@ use App\Http\Controllers\ContactRequestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SubscribeController;
-
+use App\Http\Controllers\DeviceInquiryController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
