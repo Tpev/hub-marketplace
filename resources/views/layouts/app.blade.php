@@ -22,6 +22,8 @@
 
   gtag('config', 'G-P58WV96PXJ');
 </script>
+<script src="//unpkg.com/alpinejs" defer></script>
+
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
