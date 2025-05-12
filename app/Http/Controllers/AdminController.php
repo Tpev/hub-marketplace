@@ -17,8 +17,11 @@ class AdminController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        // Eager load counts for medicalDevices and contactRequests
-        $users = User::withCount(['medicalDevices', 'contactRequests'])->get();
+		$users = User::withCount([
+			'medicalDevices',
+			'deviceInquiries as contact_requests_count' // alias to reuse existing column
+		])->get();
+
 
         return view('admin.dashboard', compact('users'));
     }
