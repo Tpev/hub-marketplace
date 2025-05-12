@@ -30,4 +30,10 @@ class MedicalDevice extends Model
     {
         return $this->hasMany(ContactRequest::class);
     }
+	
+	public function deviceInquiries()
+{
+    return $this->hasMany(DeviceInquiry::class);
+}
+
 }

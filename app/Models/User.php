@@ -36,4 +36,10 @@ protected $fillable = [
     {
         return $this->hasMany(ContactRequest::class, 'receiver_id');
     }
+	
+	public function deviceInquiries()
+{
+    return $this->hasMany(DeviceInquiry::class);
+}
+
 }

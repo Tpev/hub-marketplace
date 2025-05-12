@@ -13,11 +13,24 @@ class MedicalDeviceController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
-    {
-        $devices = MedicalDevice::paginate(10);
-        return view('medical_devices.index', compact('devices'));
+public function index(Request $request)
+{
+    $query = MedicalDevice::query();
+
+    if ($request->filled('search')) {
+        $search = $request->input('search');
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('brand', 'like', "%{$search}%")
+              ->orWhere('location', 'like', "%{$search}%");
+        });
     }
+
+    $devices = $query->latest()->paginate(10)->withQueryString();
+
+    return view('medical_devices.index', compact('devices'));
+}
+
 
     /**
      * Show the form for creating a new medical device.
@@ -111,7 +124,7 @@ class MedicalDeviceController extends Controller
             'brand' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'condition' => 'required|in:new,used,refurbished',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|max:8048',
         ]);
 
         $data = $request->only(['name', 'description', 'price', 'condition']);

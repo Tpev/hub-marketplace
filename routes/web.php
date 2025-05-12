@@ -20,6 +20,9 @@ use App\Http\Controllers\SubscribeController;
 // 1. Public Routes
 // ----------------------------------------
 
+Route::post('/device-inquiry', [\App\Http\Controllers\DeviceInquiryController::class, 'store'])
+    ->name('device-inquiry.store')->middleware('auth');
+
 
 
 Route::middleware(['auth'])->group(function () {
