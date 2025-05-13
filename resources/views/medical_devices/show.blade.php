@@ -1,102 +1,153 @@
 <x-app-layout>
+    @push('head')
+        <title>{{ $medicalDevice->name }} – Medical Device Marketplace</title>
+        <meta name="description" content="{{ Str::limit(strip_tags($medicalDevice->description), 160) }}">
+        <meta name="robots" content="index, follow">
+
+        <!-- Open Graph (Facebook, LinkedIn) -->
+        <meta property="og:title" content="{{ $medicalDevice->name }} – Medical Device Marketplace">
+        <meta property="og:description" content="{{ Str::limit(strip_tags($medicalDevice->description), 160) }}">
+        <meta property="og:image" content="{{ $medicalDevice->image ? asset(Storage::url($medicalDevice->image)) : asset('images/placeholder.png') }}">
+        <meta property="og:type" content="product">
+        <meta property="og:url" content="{{ url()->current() }}">
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $medicalDevice->name }} – Medical Device Marketplace">
+        <meta name="twitter:description" content="{{ Str::limit(strip_tags($medicalDevice->description), 160) }}">
+        <meta name="twitter:image" content="{{ $medicalDevice->image ? asset(Storage::url($medicalDevice->image)) : asset('images/placeholder.png') }}">
+    @endpush
+
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="text-2xl font-bold text-gray-800 leading-tight">
             {{ $medicalDevice->name }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg overflow-hidden" 
-             x-data="contactSellerModal()"
-             x-init="$watch('open', value => { if(value) sendInquiry(); })">
-             
-            @if($medicalDevice->image)
-                <img src="{{ Storage::url($medicalDevice->image) }}" alt="{{ $medicalDevice->name }}" class="w-full h-64 object-cover">
-            @else
-                <img src="{{ asset('images/placeholder.png') }}" alt="No Image Available" class="w-full h-64 object-cover">
-            @endif
+    <div class="py-12 bg-gray-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            <div class="p-6">
-                <h3 class="text-2xl font-bold mb-4">{{ $medicalDevice->name }}</h3>
-
-                @if($medicalDevice->brand)
-                    <p class="text-gray-700 mb-2"><strong>Brand:</strong> {{ $medicalDevice->brand }}</p>
-                @endif
-
-                <p class="text-gray-700 mb-4">{{ $medicalDevice->description }}</p>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    @if($medicalDevice->price)
-                        <p class="text-gray-600"><strong>Price:</strong> ${{ number_format($medicalDevice->price, 2) }}</p>
-                    @endif
-
-                    @if($medicalDevice->price_new)
-                        <p class="text-gray-600"><strong>New Price:</strong> ${{ number_format($medicalDevice->price_new, 2) }}</p>
-                    @endif
-
-                    @if($medicalDevice->quantity)
-                        <p class="text-gray-600"><strong>Quantity:</strong> {{ $medicalDevice->quantity }}</p>
-                    @endif
-
-                    @if($medicalDevice->condition)
-                        <p class="text-gray-600"><strong>Condition:</strong> {{ ucfirst($medicalDevice->condition) }}</p>
-                    @endif
-
-                    @if(!is_null($medicalDevice->shipping_available))
-                        <p class="text-gray-600"><strong>Shipping:</strong> {{ $medicalDevice->shipping_available ? '1' : '0' }}</p>
-                    @endif
-
-                    @if($medicalDevice->main_category)
-                        <p class="text-gray-600"><strong>Main Category:</strong> {{ $medicalDevice->main_category }}</p>
-                    @endif
-
-                    @if($medicalDevice->aux_category)
-                        <p class="text-gray-600"><strong>Aux Category:</strong> {{ $medicalDevice->aux_category }}</p>
-                    @endif
-
-                    @if($medicalDevice->location)
-                        <p class="text-gray-600"><strong>Location:</strong> {{ $medicalDevice->location }}</p>
-                    @endif
-
-                    <p class="text-gray-600"><strong>Listed by:</strong> {{ $medicalDevice->user->name }}</p>
+            {{-- Card Container --}}
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                {{-- Image --}}
+                <div class="h-64 md:h-96 bg-gray-100">
+                    <img src="{{ $medicalDevice->image ? Storage::url($medicalDevice->image) : asset('images/placeholder.png') }}"
+                         alt="{{ $medicalDevice->name }}"
+                         class="w-full h-full object-cover">
                 </div>
 
-                <div class="mt-6 flex space-x-4">
-                    @auth
-                        @if(Auth::id() !== $medicalDevice->user_id)
-                            <button @click="open = true"
-                                    class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">
-                                Contact Seller
-                            </button>
+                {{-- Content --}}
+                <div class="p-6 space-y-6">
+                    {{-- Title & Brand --}}
+                    <div class="space-y-1">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $medicalDevice->name }}</h3>
+                        @if($medicalDevice->brand)
+                            <p class="text-sm text-gray-500">Brand: <span class="font-medium text-gray-700">{{ $medicalDevice->brand }}</span></p>
                         @endif
+                    </div>
 
-                        @if(Auth::id() === $medicalDevice->user_id)
-                            <a href="{{ route('medical_devices.edit', $medicalDevice) }}"
-                               class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition">
-                                Edit
-                            </a>
-                            <form action="{{ route('medical_devices.destroy', $medicalDevice) }}"
-                                  method="POST" class="inline-block"
-                                  onsubmit="return confirm('Are you sure you want to delete this device?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                        class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">
-                                    Delete
+                    {{-- Pricing Breakdown --}}
+                    <div class="bg-gray-50 border border-gray-200 p-4 rounded-md space-y-2">
+                        <h4 class="text-sm font-semibold uppercase text-gray-500">Pricing</h4>
+
+                        @if($medicalDevice->price_new)
+                            <div class="text-sm text-gray-500">
+                                <span class="font-medium text-gray-600">Retail Price:</span>
+                                <span class="line-through">${{ number_format($medicalDevice->price_new, 2) }}</span>
+                            </div>
+
+                            <div class="text-sm">
+                                <span class="font-medium text-gray-700">Seller’s Price:</span>
+                                <span class="text-green-700 font-bold text-lg">${{ number_format($medicalDevice->price, 2) }}</span>
+                            </div>
+
+                            <div>
+                                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                    Save ${{ number_format($medicalDevice->price_new - $medicalDevice->price, 2) }}
+                                    ({{ round((($medicalDevice->price_new - $medicalDevice->price) / $medicalDevice->price_new) * 100) }}% Off)
+                                </span>
+                            </div>
+                        @elseif($medicalDevice->price)
+                            <div class="text-sm">
+                                <span class="font-medium text-gray-700">Seller’s Price:</span>
+                                <span class="text-green-700 font-bold text-lg">${{ number_format($medicalDevice->price, 2) }}</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Description --}}
+                    @if($medicalDevice->description)
+                        <div>
+                            <h4 class="text-sm font-semibold uppercase text-gray-500 mb-1">Description</h4>
+                            <p class="text-gray-700 text-sm leading-relaxed">{{ $medicalDevice->description }}</p>
+                        </div>
+                    @endif
+
+                    {{-- Specs Table --}}
+                    <div>
+                        <h4 class="text-sm font-semibold uppercase text-gray-500 mb-2">Device Details</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                            @if($medicalDevice->quantity)
+                                <div><span class="font-medium">Quantity:</span> {{ $medicalDevice->quantity }}</div>
+                            @endif
+                            @if($medicalDevice->condition)
+                                <div><span class="font-medium">Condition:</span> {{ ucfirst($medicalDevice->condition) }}</div>
+                            @endif
+                            @if(!is_null($medicalDevice->shipping_available))
+                                <div><span class="font-medium">Shipping:</span> {{ $medicalDevice->shipping_available ? 'Shipping Available' : 'Pickup Only' }}</div>
+                            @endif
+                            @if($medicalDevice->main_category)
+                                <div><span class="font-medium">Main Category:</span> {{ $medicalDevice->main_category }}</div>
+                            @endif
+                            @if($medicalDevice->aux_category)
+                                <div><span class="font-medium">Subcategory:</span> {{ $medicalDevice->aux_category }}</div>
+                            @endif
+                            @if($medicalDevice->location)
+                                <div><span class="font-medium">Location:</span> 📍 {{ $medicalDevice->location }}</div>
+                            @endif
+                            <div><span class="font-medium">Listed by:</span> {{ $medicalDevice->user->name }}</div>
+                        </div>
+                    </div>
+
+                    {{-- CTA Buttons --}}
+                    <div class="flex flex-wrap gap-4 mt-6">
+                        @auth
+                            @if(Auth::id() !== $medicalDevice->user_id)
+                                <button @click="open = true"
+                                        class="bg-green-600 text-white px-5 py-2.5 rounded-md hover:bg-green-700 transition">
+                                    📩 Contact Seller
                                 </button>
-                            </form>
-                        @endif
-                    @endauth
+                            @else
+                                <a href="{{ route('medical_devices.edit', $medicalDevice) }}"
+                                   class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition">
+                                    ✏️ Edit
+                                </a>
+                                <form action="{{ route('medical_devices.destroy', $medicalDevice) }}"
+                                      method="POST"
+                                      onsubmit="return confirm('Are you sure you want to delete this device?');"
+                                      class="inline-block">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">
+                                        🗑 Delete
+                                    </button>
+                                </form>
+                            @endif
+                        @endauth
 
-                    @guest
-                        <a href="{{ route('register') }}"
-                           class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
-                            Register to Contact Seller
-                        </a>
-                    @endguest
+                        @guest
+                            <a href="{{ route('register') }}"
+                               class="bg-blue-500 text-white px-5 py-2.5 rounded-md hover:bg-blue-600 transition">
+                                Register to Contact Seller
+                            </a>
+                        @endguest
+                    </div>
                 </div>
+            </div>
 
-                <!-- Modal -->
+            {{-- Modal --}}
+            <div x-data="contactSellerModal()" x-init="$watch('open', value => { if(value) sendInquiry(); })">
                 <div x-show="open" x-cloak
                      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
                      x-transition.opacity>
@@ -119,6 +170,36 @@
                     </div>
                 </div>
             </div>
+
+            {{-- JSON-LD Structured Data --}}
+            @push('scripts')
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "name": "{{ $medicalDevice->name }}",
+                    "image": ["{{ $medicalDevice->image ? asset(Storage::url($medicalDevice->image)) : asset('images/placeholder.png') }}"],
+                    "description": "{{ Str::limit(strip_tags($medicalDevice->description), 160) }}",
+                    "sku": "MD-{{ $medicalDevice->id }}",
+                    "brand": {
+                        "@type": "Brand",
+                        "name": "{{ $medicalDevice->brand ?? 'Generic' }}"
+                    },
+                    "offers": {
+                        "@type": "Offer",
+                        "url": "{{ url()->current() }}",
+                        "priceCurrency": "USD",
+                        "price": "{{ $medicalDevice->price }}",
+                        "itemCondition": "https://schema.org/{{ ucfirst($medicalDevice->condition) }}Condition",
+                        "availability": "{{ $medicalDevice->quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}",
+                        "seller": {
+                            "@type": "Organization",
+                            "name": "{{ $medicalDevice->user->name }}"
+                        }
+                    }
+                }
+                </script>
+            @endpush
         </div>
     </div>
 
