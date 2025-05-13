@@ -3,15 +3,11 @@
         <title>{{ $medicalDevice->name }} – Medical Device Marketplace</title>
         <meta name="description" content="{{ Str::limit(strip_tags($medicalDevice->description), 160) }}">
         <meta name="robots" content="index, follow">
-
-        <!-- Open Graph (Facebook, LinkedIn) -->
         <meta property="og:title" content="{{ $medicalDevice->name }} – Medical Device Marketplace">
         <meta property="og:description" content="{{ Str::limit(strip_tags($medicalDevice->description), 160) }}">
         <meta property="og:image" content="{{ $medicalDevice->image ? asset(Storage::url($medicalDevice->image)) : asset('images/placeholder.png') }}">
         <meta property="og:type" content="product">
         <meta property="og:url" content="{{ url()->current() }}">
-
-        <!-- Twitter Card -->
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{{ $medicalDevice->name }} – Medical Device Marketplace">
         <meta name="twitter:description" content="{{ Str::limit(strip_tags($medicalDevice->description), 160) }}">
@@ -25,9 +21,9 @@
     </x-slot>
 
     <div class="py-12 bg-gray-50">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div x-data="contactSellerModal()" x-init="$watch('open', value => { if(value) sendInquiry(); })"
+             class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            {{-- Card Container --}}
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                 {{-- Image --}}
                 <div class="h-64 md:h-96 bg-gray-100">
@@ -46,21 +42,18 @@
                         @endif
                     </div>
 
-                    {{-- Pricing Breakdown --}}
+                    {{-- Pricing --}}
                     <div class="bg-gray-50 border border-gray-200 p-4 rounded-md space-y-2">
                         <h4 class="text-sm font-semibold uppercase text-gray-500">Pricing</h4>
-
                         @if($medicalDevice->price_new)
                             <div class="text-sm text-gray-500">
                                 <span class="font-medium text-gray-600">Retail Price:</span>
                                 <span class="line-through">${{ number_format($medicalDevice->price_new, 2) }}</span>
                             </div>
-
                             <div class="text-sm">
                                 <span class="font-medium text-gray-700">Seller’s Price:</span>
                                 <span class="text-green-700 font-bold text-lg">${{ number_format($medicalDevice->price, 2) }}</span>
                             </div>
-
                             <div>
                                 <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
                                     Save ${{ number_format($medicalDevice->price_new - $medicalDevice->price, 2) }}
@@ -83,7 +76,7 @@
                         </div>
                     @endif
 
-                    {{-- Specs Table --}}
+                    {{-- Specs --}}
                     <div>
                         <h4 class="text-sm font-semibold uppercase text-gray-500 mb-2">Device Details</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
@@ -109,7 +102,7 @@
                         </div>
                     </div>
 
-                    {{-- CTA Buttons --}}
+                    {{-- CTAs --}}
                     <div class="flex flex-wrap gap-4 mt-6">
                         @auth
                             @if(Auth::id() !== $medicalDevice->user_id)
@@ -147,26 +140,22 @@
             </div>
 
             {{-- Modal --}}
-            <div x-data="contactSellerModal()" x-init="$watch('open', value => { if(value) sendInquiry(); })">
-                <div x-show="open" x-cloak
-                     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-                     x-transition.opacity>
-                    <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative">
-                        <h2 class="text-lg font-semibold mb-2">📧 Seller Contact</h2>
-                        <p class="text-gray-600 mb-4">Here is the seller's email address:</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-blue-700 font-medium">{{ $medicalDevice->user->email }}</span>
-                            <button @click="copyEmail('{{ $medicalDevice->user->email }}')"
-                                    class="text-sm text-blue-500 hover:underline">
-                                Copy
-                            </button>
-                        </div>
-                        <div class="mt-6 text-right">
-                            <button @click="open = false"
-                                    class="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded">
-                                Close
-                            </button>
-                        </div>
+            <div x-show="open" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-transition.opacity>
+                <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative">
+                    <h2 class="text-lg font-semibold mb-2">📧 Seller Contact</h2>
+                    <p class="text-gray-600 mb-4">Here is the seller's email address:</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-700 font-medium">{{ $medicalDevice->user->email }}</span>
+                        <button @click="copyEmail('{{ $medicalDevice->user->email }}')"
+                                class="text-sm text-blue-500 hover:underline">
+                            Copy
+                        </button>
+                    </div>
+                    <div class="mt-6 text-right">
+                        <button @click="open = false"
+                                class="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded">
+                            Close
+                        </button>
                     </div>
                 </div>
             </div>
