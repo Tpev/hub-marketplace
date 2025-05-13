@@ -39,10 +39,10 @@ public function index(Request $request)
      */
     public function create()
     {
-		  $user = auth()->user();
+/* 		  $user = auth()->user();
 		    if (in_array($user->intent, ['Seller', 'Both']) && !$user->is_subscribed) {
         return redirect()->route('subscribe.page')->with('error', 'You must subscribe before listing a device.');
-    }
+    } */
         return view('medical_devices.create');
     }
 
@@ -52,29 +52,44 @@ public function index(Request $request)
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'condition' => 'required|in:new,used,refurbished',
-            'image' => 'nullable|image|max:8048',
-			'location' => 'required|string',
-            'brand' => 'nullable|string',
-        ]);
+public function store(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'brand' => 'nullable|string|max:255',
+        'description' => 'required|string',
+        'price' => 'required|numeric|min:0',
+        'price_new' => 'nullable|numeric|min:0',
+        'condition' => 'required|in:new,used,refurbished',
+        'quantity' => 'required|integer|min:1',
+        'shipping_available' => 'required|boolean',
+        'main_category' => 'nullable|string|max:255',
+        'aux_category' => 'nullable|string|max:255',
+        'city' => 'nullable|string|max:255',
+        'state' => 'nullable|string|max:255',
+        'country' => 'nullable|string|max:255',
+        'image' => 'nullable|image|max:8048',
+    ]);
 
-        $data = $request->only(['name', 'description', 'price', 'condition','brand','location']);
-        $data['user_id'] = Auth::id();
+    $data = $request->only([
+        'name', 'brand', 'description', 'price', 'price_new', 'condition', 'quantity',
+        'shipping_available', 'main_category', 'aux_category', 'city', 'state', 'country'
+    ]);
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('medical_devices', 'public');
-        }
+    $data['user_id'] = auth()->id();
 
-        MedicalDevice::create($data);
+    // For backward compatibility
+    $data['location'] = trim("{$request->input('city')} {$request->input('state')} {$request->input('country')}");
 
-        return redirect()->route('medical_devices.index')->with('success', 'Medical device listed successfully.');
+    if ($request->hasFile('image')) {
+        $data['image'] = $request->file('image')->store('medical_devices', 'public');
     }
+
+    MedicalDevice::create($data);
+
+    return redirect()->route('medical_devices.index')->with('success', 'Medical device listed successfully.');
+}
+
 
     /**
      * Display the specified medical device.
@@ -110,37 +125,50 @@ public function index(Request $request)
      * @param  \App\Models\MedicalDevice  $medicalDevice
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, MedicalDevice $medicalDevice)
-    {
-        // Authorization: Ensure the user owns the device
-        if ($medicalDevice->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'location' => 'required|string',
-            'brand' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'condition' => 'required|in:new,used,refurbished',
-            'image' => 'nullable|image|max:8048',
-        ]);
-
-        $data = $request->only(['name', 'description', 'price', 'condition']);
-
-        if ($request->hasFile('image')) {
-            // Delete the old image if exists
-            if ($medicalDevice->image) {
-                \Storage::disk('public')->delete($medicalDevice->image);
-            }
-            $data['image'] = $request->file('image')->store('medical_devices', 'public');
-        }
-
-        $medicalDevice->update($data);
-
-        return redirect()->route('medical_devices.show', $medicalDevice)->with('success', 'Medical device updated successfully.');
+public function update(Request $request, MedicalDevice $medicalDevice)
+{
+    // Authorization: Ensure the user owns the device
+    if ($medicalDevice->user_id !== Auth::id()) {
+        abort(403, 'Unauthorized action.');
     }
+
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'brand' => 'nullable|string|max:255',
+        'description' => 'required|string',
+        'price' => 'required|numeric|min:0',
+        'price_new' => 'nullable|numeric|min:0',
+        'condition' => 'required|in:new,used,refurbished',
+        'quantity' => 'required|integer|min:1',
+        'shipping_available' => 'required|boolean',
+        'main_category' => 'nullable|string|max:255',
+        'aux_category' => 'nullable|string|max:255',
+        'city' => 'nullable|string|max:255',
+        'state' => 'nullable|string|max:255',
+        'country' => 'nullable|string|max:255',
+        'image' => 'nullable|image|max:8048',
+    ]);
+
+    $data = $request->only([
+        'name', 'brand', 'description', 'price', 'price_new', 'condition', 'quantity',
+        'shipping_available', 'main_category', 'aux_category', 'city', 'state', 'country'
+    ]);
+
+    // Update legacy location field
+    $data['location'] = trim("{$request->input('city')} {$request->input('state')} {$request->input('country')}");
+
+    if ($request->hasFile('image')) {
+        if ($medicalDevice->image) {
+            \Storage::disk('public')->delete($medicalDevice->image);
+        }
+        $data['image'] = $request->file('image')->store('medical_devices', 'public');
+    }
+
+    $medicalDevice->update($data);
+
+    return redirect()->route('medical_devices.show', $medicalDevice)->with('success', 'Medical device updated successfully.');
+}
+
 
     /**
      * Remove the specified medical device from storage.

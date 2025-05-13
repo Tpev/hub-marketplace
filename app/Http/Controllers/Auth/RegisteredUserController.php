@@ -48,9 +48,9 @@ public function store(Request $request): RedirectResponse
     Auth::login($user);
 
     // Redirect seller or both to subscription
-    if (in_array($user->intent, ['Seller', 'Both'])) {
+/*     if (in_array($user->intent, ['Seller', 'Both'])) {
         return redirect()->route('subscribe.page');
-    }
+    } */
 
     return redirect()->route('medical_devices.index');
 }

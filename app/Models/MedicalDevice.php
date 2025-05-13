@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,16 +8,33 @@ class MedicalDevice extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'name',
+	protected $fillable = [
+		'user_id',
+		'name',
 		'brand',
-		'location',
-        'description',
-        'price',
-        'condition',
-        'image',
-    ];
+		'location', // legacy field
+		'city',
+		'state',
+		'country',
+		'description',
+		'price',
+		'price_new',
+		'quantity',
+		'shipping',
+		'condition',
+		'main_category',
+		'aux_category',
+		'image',
+	];
+
+public function getFullLocationAttribute()
+{
+    if ($this->city || $this->state || $this->country) {
+        return trim(collect([$this->city, $this->state, $this->country])->filter()->implode(', '), ', ');
+    }
+
+    return $this->location;
+}
 
     // Relationships
     public function user()
@@ -30,10 +46,9 @@ class MedicalDevice extends Model
     {
         return $this->hasMany(ContactRequest::class);
     }
-	
-	public function deviceInquiries()
-{
-    return $this->hasMany(DeviceInquiry::class);
-}
 
+    public function deviceInquiries()
+    {
+        return $this->hasMany(DeviceInquiry::class);
+    }
 }
