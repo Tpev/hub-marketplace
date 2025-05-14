@@ -24,35 +24,31 @@ class RegisteredUserController extends Controller
 
     /**
      * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
-public function store(Request $request): RedirectResponse
-{
-    $request->validate([
-        'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-        'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        'intent' => ['required', 'in:Buyer,Seller,Both'],
-    ]);
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'name'           => ['required', 'string', 'max:255'],
+            'email'          => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'password'       => ['required', 'confirmed', Rules\Password::defaults()],
+            'intent'         => ['required', 'in:Buyer,Seller,Both'],
+            'user_type'      => ['required', 'in:pro,public'],
+            'business_type'  => ['nullable', 'string', 'max:255'],
+        ]);
 
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'intent' => $request->intent,
-        'is_subscribed' => false, // default
-    ]);
+        $user = User::create([
+            'name'           => $request->name,
+            'email'          => $request->email,
+            'password'       => Hash::make($request->password),
+            'intent'         => $request->intent,
+            'user_type'      => $request->user_type,
+            'business_type'  => $request->user_type === 'pro' ? $request->business_type : null,
+            'is_subscribed'  => false,
+        ]);
 
-    event(new Registered($user));
-    Auth::login($user);
+        event(new Registered($user));
+        Auth::login($user);
 
-    // Redirect seller or both to subscription
-/*     if (in_array($user->intent, ['Seller', 'Both'])) {
-        return redirect()->route('subscribe.page');
-    } */
-
-    return redirect()->route('medical_devices.index');
-}
-
+        return redirect()->route('medical_devices.index');
+    }
 }

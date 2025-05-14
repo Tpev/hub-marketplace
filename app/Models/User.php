@@ -17,6 +17,8 @@ protected $fillable = [
     'intent',
     'is_subscribed',
     'license_tier',
+	'user_type',
+	'business_type',
 ];
 
 

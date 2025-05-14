@@ -1,7 +1,7 @@
 <!-- resources/views/layouts/navigation.blade.php -->
 <nav class="bg-white border-b border-gray-100" x-data="{ open: false }">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
         <div class="flex justify-between h-16">
             <!-- Left Side -->
             <div class="flex">
@@ -19,6 +19,31 @@
                     </x-nav-link>
                 </div>
             </div>
+<!-- Global Search Form -->
+<form method="GET" action="{{ route('medical_devices.index') }}" class="hidden sm:flex items-center mr-6">
+    <div class="flex">
+        <input
+            type="text"
+            name="search"
+            value="{{ request('search') }}"
+            placeholder="Search devices..."
+            class="px-3 py-1.5 border border-gray-300 rounded-l-md shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm w-56"
+        >
+<button
+    type="submit"
+    class="bg-green-600 text-white px-3 py-1.5 rounded-r-md hover:bg-green-700 transition flex items-center justify-center"
+    aria-label="Search"
+>
+<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+  <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l4.387 4.387a1 1 0 01-1.414 1.414l-4.387-4.387zM8 14a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+</svg>
+
+
+</button>
+
+
+    </div>
+</form>
 
             <!-- Right Side -->
             <div class="hidden sm:flex sm:items-center sm:ml-6">
