@@ -16,6 +16,9 @@ use App\Http\Controllers\BuyerInquiryController;
 | Register web routes for your application here.
 |
 */
+Route::get('/sitemap.xml', function () {
+    return response()->file(public_path('sitemap.xml'), ['Content-Type' => 'application/xml']);
+});
 
 // ----------------------------------------
 // 1. Public Routes
