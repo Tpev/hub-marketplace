@@ -49,6 +49,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intent</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Professional?</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Type</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscribed</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Tier</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items Listed</th>
@@ -63,6 +65,17 @@
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $user->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $user->intent }}</td>
+									<td class="px-6 py-4 whitespace-nowrap">
+										@if($user->is_professional)
+											<span class="text-green-600 font-semibold">Yes</span>
+										@else
+											<span class="text-gray-500">No</span>
+										@endif
+									</td>
+									<td class="px-6 py-4 whitespace-nowrap">
+										{{ $user->business_type ?? '—' }}
+									</td>
+
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($user->is_subscribed)
                                             <span class="text-green-600 font-semibold">Yes</span>
