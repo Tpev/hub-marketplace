@@ -65,13 +65,10 @@
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $user->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $user->intent }}</td>
-									<td class="px-6 py-4 whitespace-nowrap">
-										@if($user->is_professional)
-											<span class="text-green-600 font-semibold">Yes</span>
-										@else
-											<span class="text-gray-500">No</span>
-										@endif
+									<td class="px-6 py-4 whitespace-nowrap capitalize">
+										{{ $user->user_type ?? '—' }}
 									</td>
+
 									<td class="px-6 py-4 whitespace-nowrap">
 										{{ $user->business_type ?? '—' }}
 									</td>
