@@ -11,6 +11,10 @@
         </div>
     </x-slot>
 
+    @php
+        $licensed = auth()->check() && method_exists(auth()->user(), 'hasActiveLicense') && auth()->user()->hasActiveLicense();
+    @endphp
+
     <div class="py-12 bg-gray-50">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
@@ -36,12 +40,21 @@
 
                 <div class="flex-shrink-0 flex gap-3">
                     @auth
-                        <a
-                            href="{{ route('medical_devices.create') }}"
-                            class="bg-green-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-700 transition"
-                        >
-                            + Add New Device
-                        </a>
+                        @if($licensed)
+                            <a
+                                href="{{ route('medical_devices.create') }}"
+                                class="bg-green-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-700 transition"
+                            >
+                                + Add New Device
+                            </a>
+                        @else
+                            <a
+                                href="{{ route('subscribe.page') }}"
+                                class="bg-amber-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-amber-600 transition"
+                            >
+                                Subscribe to List
+                            </a>
+                        @endif
                     @else
                         <a
                             href="{{ route('register') }}"
@@ -53,120 +66,128 @@
                 </div>
             </div>
 
-            {{-- Flash Message --}}
+            {{-- Flash Messages --}}
             @if(session('success'))
                 <div class="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-md shadow">
                     {{ session('success') }}
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded-md shadow">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             {{-- Devices Grid --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-@forelse($devices as $device)
-    <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden border border-gray-100 flex flex-col">
-{{-- Image --}}
-<div class="h-48 bg-gray-100 relative">
-    <img
-        src="{{ $device->image ? Storage::url($device->image) : asset('images/placeholder.png') }}"
-        alt="{{ $device->name }}"
-        class="w-full h-full object-cover"
-    >
+                @forelse($devices as $device)
+                    <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden border border-gray-100 flex flex-col">
+                        {{-- Image --}}
+                        <div class="h-48 bg-gray-100 relative">
+                            <img
+                                src="{{ $device->image ? Storage::url($device->image) : asset('images/placeholder.png') }}"
+                                alt="{{ $device->name }}"
+                                class="w-full h-full object-cover"
+                            >
+                        </div>
 
-</div>
+                        {{-- Content --}}
+                        <div class="p-4 flex-1 flex flex-col">
+                            {{-- Device Name --}}
+                            <div>
+                                <div class="text-xs uppercase tracking-wide text-gray-500 font-medium">Device</div>
+                                <h3 class="text-lg font-semibold text-gray-800 truncate">
+                                    {{ $device->name }}
+                                </h3>
+                            </div>
 
+                            {{-- Price Section --}}
+                            <div class="mt-3 space-y-1">
+                                <div class="text-xs uppercase tracking-wide text-gray-500 font-medium">Pricing</div>
 
-        {{-- Content --}}
-        <div class="p-4 flex-1 flex flex-col">
-            {{-- Device Name --}}
-            <div>
-                <div class="text-xs uppercase tracking-wide text-gray-500 font-medium">Device</div>
-                <h3 class="text-lg font-semibold text-gray-800 truncate">
-                    {{ $device->name }}
-                </h3>
-            </div>
+                                @if($device->price_new)
+                                    <div class="text-sm text-gray-500">
+                                        <span class="font-medium">Retail Price:</span>
+                                        <span class="line-through">${{ number_format($device->price_new, 2) }}</span>
+                                    </div>
 
-{{-- Price Section --}}
-<div class="mt-3 space-y-1">
-    <div class="text-xs uppercase tracking-wide text-gray-500 font-medium">Pricing</div>
+                                    <div class="text-sm text-gray-700">
+                                        <span class="font-medium">Seller’s Price:</span>
+                                        <span class="text-green-700 font-bold text-lg">${{ number_format($device->price, 2) }}</span>
+                                    </div>
 
-    @if($device->price_new)
-        <div class="text-sm text-gray-500">
-            <span class="font-medium">Retail Price:</span>
-            <span class="line-through">${{ number_format($device->price_new, 2) }}</span>
-        </div>
+                                    @php
+                                        $save = max(0, ($device->price_new - $device->price));
+                                        $pct  = $device->price_new > 0 ? round(($save / $device->price_new) * 100) : 0;
+                                    @endphp
+                                    @if($save > 0)
+                                        <div class="mt-1">
+                                            <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                                Save ${{ number_format($save, 2) }} ({{ $pct }}% Off)
+                                            </span>
+                                        </div>
+                                    @endif
+                                @else
+                                    <div class="text-sm text-gray-700">
+                                        <span class="font-medium">Seller’s Price:</span>
+                                        <span class="text-green-700 font-bold text-lg">${{ number_format($device->price, 2) }}</span>
+                                    </div>
+                                @endif
+                            </div>
 
-        <div class="text-sm text-gray-700">
-            <span class="font-medium">Seller’s Price:</span>
-            <span class="text-green-700 font-bold text-lg">${{ number_format($device->price, 2) }}</span>
-        </div>
+                            {{-- Meta Details --}}
+                            <div class="mt-4 grid grid-cols-1 gap-2 text-sm text-gray-700">
+                                <div>
+                                    <span class="text-xs uppercase text-gray-500">Condition</span>
+                                    <div>{{ ucfirst($device->condition) }}</div>
+                                </div>
 
-        <div class="mt-1">
-            <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
-                Save ${{ number_format($device->price_new - $device->price, 2) }}
-                ({{ round((($device->price_new - $device->price) / $device->price_new) * 100) }}% Off)
-            </span>
-        </div>
-    @else
-        <div class="text-sm text-gray-700">
-            <span class="font-medium">Seller’s Price:</span>
-            <span class="text-green-700 font-bold text-lg">${{ number_format($device->price, 2) }}</span>
-        </div>
-    @endif
-</div>
+                                @if($device->location)
+                                    <div>
+                                        <span class="text-xs uppercase text-gray-500">Location</span>
+                                        <div>📍 {{ $device->location }}</div>
 
+                                        @if(!is_null($device->shipping_available))
+                                            @if($device->shipping_available)
+                                                <span class="inline-block bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full mt-1">
+                                                    Shipping Available
+                                                </span>
+                                            @else
+                                                <span class="inline-block bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full mt-1">
+                                                    Pickup Only
+                                                </span>
+                                            @endif
+                                        @endif
+                                    </div>
+                                @endif
 
-            {{-- Meta Details --}}
-            <div class="mt-4 grid grid-cols-1 gap-2 text-sm text-gray-700">
-                <div>
-                    <span class="text-xs uppercase text-gray-500">Condition</span>
-                    <div>{{ ucfirst($device->condition) }}</div>
-                </div>
+                                @if($device->aux_category)
+                                    <div>
+                                        <span class="text-xs uppercase text-gray-500">Subcategory</span>
+                                        <div class="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                                            {{ $device->aux_category }}
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
 
-                @if($device->location)
-                <div>
-                    <span class="text-xs uppercase text-gray-500">Location</span>
-                    <div>📍 {{ $device->location }}</div>
-					    @if($device->shipping)
-        <span class="inline-block bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-
-            Shipping Available
-        </span>
-    @else
-        <span class="inline-block bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-
-            Pickup Only
-        </span>
-    @endif
-                </div>
-                @endif
-
-                @if($device->aux_category)
-                <div>
-                    <span class="text-xs uppercase text-gray-500">Subcategory</span>
-                    <div class="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium">
-                        {{ $device->aux_category }}
+                            {{-- CTA --}}
+                            <div class="mt-auto pt-4">
+                                <a
+                                    href="{{ route('medical_devices.show', $device) }}"
+                                    class="inline-block text-sm text-green-600 hover:underline font-medium"
+                                >
+                                    View Details →
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                @endif
-            </div>
-
-            {{-- CTA --}}
-            <div class="mt-auto pt-4">
-                <a
-                    href="{{ route('medical_devices.show', $device) }}"
-                    class="inline-block text-sm text-green-600 hover:underline font-medium"
-                >
-                    View Details →
-                </a>
-            </div>
-        </div>
-    </div>
-@empty
-    <div class="col-span-3 text-center text-gray-500 py-12">
-        No medical devices listed yet.
-    </div>
-@endforelse
-
+                @empty
+                    <div class="col-span-3 text-center text-gray-500 py-12">
+                        No medical devices listed yet.
+                    </div>
+                @endforelse
             </div>
 
             {{-- Pagination --}}
@@ -175,7 +196,7 @@
             </div>
 
             {{-- Buyer Inquiry Form --}}
-            @if(auth()->guest() || auth()->user()->intent === 'Buyer')
+            @if(auth()->guest() || (auth()->check() && (auth()->user()->intent === 'Buyer')))
                 <div class="mt-16 max-w-2xl mx-auto bg-white border border-green-100 rounded-xl shadow p-8">
                     <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">
                         Can’t find the device you’re looking for?
