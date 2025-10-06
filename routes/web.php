@@ -11,6 +11,7 @@ use App\Http\Controllers\SubscribeController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\DeviceInquiryController;
 use App\Http\Controllers\BuyerInquiryController;
+use App\Models\MedicalDevice;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +32,14 @@ Route::get('/sitemap.xml', function () {
 // ----------------------------------------------------------------------------
 
 // Landing
-Route::get('/', fn () => view('landing'));
+Route::get('/', function () {
+    $devices = MedicalDevice::query()
+        ->latest()
+        ->take(12)
+        ->get(['id','name','brand','price','price_new','image','location','condition','shipping_available']);
+
+    return view('landing', compact('devices'));
+});
 
 // Marketplace index & public show
 Route::get('/marketplace', [MedicalDeviceController::class, 'index'])->name('medical_devices.index');

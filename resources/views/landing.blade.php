@@ -213,6 +213,101 @@
             </div>
         </div>
     </section>
+	
+	
+	{{-- Featured Devices (pulled from marketplace) --}}
+@if(!empty($devices) && count($devices))
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="text-4xl font-bold text-gray-800">Featured Devices</h2>
+                <p class="mt-2 text-lg text-gray-600">Fresh listings from our marketplace.</p>
+            </div>
+            <a href="{{ route('medical_devices.index') }}"
+               class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-md font-semibold hover:bg-green-700 transition">
+                Browse All
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach($devices as $device)
+                <a href="{{ route('medical_devices.show', $device) }}"
+                   class="group bg-white rounded-lg border border-gray-100 shadow hover:shadow-xl transition overflow-hidden flex flex-col">
+                    <div class="h-48 bg-gray-100">
+                        <img
+                            src="{{ $device->image ? Storage::url($device->image) : asset('images/placeholder.png') }}"
+                            alt="{{ $device->name }}"
+                            class="w-full h-full object-cover group-hover:scale-[1.02] transition"
+                        >
+                    </div>
+
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div class="text-xs uppercase tracking-wide text-gray-500 font-medium">Device</div>
+                        <h3 class="text-lg font-semibold text-gray-800 line-clamp-1">
+                            {{ $device->name }}
+                        </h3>
+                        @if($device->brand)
+                            <div class="text-sm text-gray-500 line-clamp-1">{{ $device->brand }}</div>
+                        @endif>
+
+                        <div class="mt-3">
+                            @if(!is_null($device->price))
+                                <div class="text-sm text-gray-700">
+                                    <span class="font-medium">Price:</span>
+                                    <span class="text-green-700 font-bold">
+                                        ${{ number_format($device->price, 2) }}
+                                    </span>
+                                    @if(!is_null($device->price_new) && $device->price_new > $device->price)
+                                        @php
+                                            $save = $device->price_new - $device->price;
+                                            $pct  = $device->price_new > 0 ? round(($save / $device->price_new) * 100) : 0;
+                                        @endphp
+                                        <span class="ml-2 inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+                                            Save ${{ number_format($save, 0) }} ({{ $pct }}%)
+                                        </span>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="mt-3 text-sm text-gray-600">
+                            @if($device->location)
+                                <div class="flex items-center gap-1">
+                                    <span>📍</span>
+                                    <span class="line-clamp-1">{{ $device->location }}</span>
+                                </div>
+                            @endif
+                            @if($device->condition)
+                                <div class="mt-1">Condition: {{ ucfirst($device->condition) }}</div>
+                            @endif
+                            @if(!is_null($device->shipping_available))
+                                <div class="mt-1">
+                                    <span class="inline-block bg-yellow-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                                        {{ $device->shipping_available ? 'Shipping Available' : 'Pickup Only' }}
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="mt-auto pt-4">
+                            <span class="inline-block text-sm text-green-600 group-hover:underline font-medium">
+                                View Details →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
 <!-- Seller Plans Section -->
 <section class="py-16 bg-white border-t border-gray-100">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
