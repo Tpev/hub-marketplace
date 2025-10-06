@@ -12,13 +12,74 @@ use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\DeviceInquiryController;
 use App\Http\Controllers\BuyerInquiryController;
 use App\Models\MedicalDevice;
-
+use Illuminate\Support\Facades\Response;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 | Register web routes for your application here.
 */
+// routes/web.php
+
+
+
+
+Route::get('/export-medical-devices', function () {
+    $devices = MedicalDevice::with('user')->get();
+
+    $filename = 'medical_devices_' . now()->format('Ymd_His') . '.csv';
+    $handle = fopen('php://temp', 'r+');
+
+    // Define CSV header
+    fputcsv($handle, [
+        'ID',
+        'User ID',
+        'User Email',
+        'Name',
+        'Brand',
+        'Category',
+        'Aux Category',
+        'Condition',
+        'Price',
+        'Price New',
+        'Quantity',
+        'City',
+        'State',
+        'Country',
+        'Shipping',
+        'Created At',
+    ]);
+
+    foreach ($devices as $d) {
+        fputcsv($handle, [
+            $d->id,
+            $d->user_id,
+            optional($d->user)->email,
+            $d->name,
+            $d->brand,
+            $d->main_category,
+            $d->aux_category,
+            $d->condition,
+            $d->price,
+            $d->price_new,
+            $d->quantity,
+            $d->city,
+            $d->state,
+            $d->country,
+            $d->shipping,
+            $d->created_at,
+        ]);
+    }
+
+    rewind($handle);
+    $contents = stream_get_contents($handle);
+    fclose($handle);
+
+    return Response::make($contents, 200, [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => "attachment; filename=\"$filename\"",
+    ]);
+});
 
 // ----------------------------------------------------------------------------
 // Static / public assets
