@@ -43,7 +43,7 @@ class AdminController extends Controller
             'average_price'   => round(MedicalDevice::avg('price'), 2),
         ];
 
-        // ✅ Define allowed tiers for the UI + validation
+        // Allowed tiers (for Blade UI + validation)
         $licenseTiers = [
             'basic'      => 'Basic',
             'pro'        => 'Pro',
@@ -57,20 +57,37 @@ class AdminController extends Controller
     {
         $this->ensureAdmin();
 
-        $licenseTiers = ['basic', 'pro', 'enterprise'];
+        // Optional safety: prevent admin from disabling themselves
+        if ($user->id === auth()->id()) {
+            return back()->withErrors([
+                'is_subscribed' => "You can't change your own license from here.",
+            ]);
+        }
+
+        $allowedTiers = ['basic', 'pro', 'enterprise'];
 
         $data = $request->validate([
+            // Tamper check: must match route user
+            'user_id'       => ['required', 'integer'],
             'is_subscribed' => ['required', 'in:0,1'],
-            'license_tier'  => ['nullable', 'string', 'in:' . implode(',', $licenseTiers)],
+            'license_tier'  => ['nullable', 'in:' . implode(',', $allowedTiers)],
         ]);
+
+        if ((int) $data['user_id'] !== (int) $user->id) {
+            abort(403, 'Invalid target user.');
+        }
 
         $isSubscribed = (int) $data['is_subscribed'] === 1;
 
+        // If active, tier is required (guardrail)
+        if ($isSubscribed && empty($data['license_tier'])) {
+            return back()->withErrors([
+                'license_tier' => 'Tier is required when license is Active.',
+            ]);
+        }
+
         $user->is_subscribed = $isSubscribed;
-
-        // If not subscribed, clear tier (optional but usually cleaner)
-        $user->license_tier = $isSubscribed ? ($data['license_tier'] ?? null) : null;
-
+        $user->license_tier  = $isSubscribed ? $data['license_tier'] : null; // clear tier if inactive
         $user->save();
 
         return back()->with('success', "✅ License updated for {$user->name} (User #{$user->id}).");

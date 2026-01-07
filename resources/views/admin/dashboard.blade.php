@@ -49,6 +49,12 @@
                             {{ session('success') }}
                         </div>
                     @endif
+
+                    @if($errors->any())
+                        <div class="text-sm px-3 py-2 rounded bg-red-50 text-red-700 border border-red-200">
+                            Some changes were not saved. Please check the row you edited.
+                        </div>
+                    @endif
                 </div>
 
                 <div class="overflow-x-auto">
@@ -62,7 +68,6 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Professional?</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Type</th>
 
-                                {{-- NEW --}}
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Tier</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
@@ -89,13 +94,16 @@
                                         {{ $user->business_type ?? '—' }}
                                     </td>
 
-                                    {{-- Inline license editor (single form, spans 3 columns) --}}
+                                    {{-- Inline license editor --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <form method="POST"
                                               action="{{ route('admin.users.license.update', $user) }}"
                                               class="flex items-center gap-3">
                                             @csrf
                                             @method('PATCH')
+
+                                            {{-- Tamper check --}}
+                                            <input type="hidden" name="user_id" value="{{ $user->id }}">
 
                                             <select name="is_subscribed"
                                                     class="border-gray-300 rounded-lg text-sm focus:ring focus:ring-blue-200">
@@ -123,6 +131,10 @@
                                             </button>
                                         </form>
 
+                                        {{-- Validation errors (will appear after submit) --}}
+                                        @error('user_id')
+                                            <div class="text-xs text-red-600 mt-1">{{ $message }}</div>
+                                        @enderror
                                         @error('is_subscribed')
                                             <div class="text-xs text-red-600 mt-1">{{ $message }}</div>
                                         @enderror
