@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MedicalDevice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class MedicalDeviceController extends Controller
 {
@@ -15,18 +16,37 @@ class MedicalDeviceController extends Controller
      */
 public function index(Request $request)
 {
-    $query = MedicalDevice::query();
+    $search = $request->string('search')->trim()->toString();
+    $page   = (int) $request->input('page', 1);
 
-    if ($request->filled('search')) {
-        $search = $request->input('search');
-        $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('brand', 'like', "%{$search}%")
-              ->orWhere('location', 'like', "%{$search}%");
-        });
-    }
+    // Cache key varies by search + page (and bump this version if you change query fields)
+    $cacheKey = 'md:index:v1:search=' . md5($search) . ':page=' . $page;
 
-    $devices = $query->latest()->paginate(10)->withQueryString();
+    // Keep it short so new listings show up quickly (tweak as you like)
+    $ttl = now()->addSeconds(60);
+
+    $devices = Cache::remember($cacheKey, $ttl, function () use ($search) {
+        $query = MedicalDevice::query();
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        return $query
+            ->select([
+                'id','name','brand','price','price_new','condition','location',
+                'shipping_available','aux_category','image','created_at'
+            ])
+            ->orderByDesc('id')
+            ->simplePaginate(24);
+    });
+
+    // Keep query string behavior identical to your current code
+    $devices->appends($request->query());
 
     return view('medical_devices.index', compact('devices'));
 }

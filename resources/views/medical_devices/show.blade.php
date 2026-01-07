@@ -1,17 +1,68 @@
 <x-app-layout>
+    @php
+        // ---------------------------------------------------------
+        // Image URL resolver (supports: local storage path OR external URL)
+        // ---------------------------------------------------------
+        $rawImage = $medicalDevice->image;
+
+        if ($rawImage) {
+            // External full URL
+            if (Str::startsWith($rawImage, ['http://', 'https://'])) {
+                $imgUrl = $rawImage;
+            }
+            // Protocol-relative URL (//cdn.shopify.com/...)
+            elseif (Str::startsWith($rawImage, '//')) {
+                $imgUrl = 'https:' . $rawImage;
+            }
+            // Otherwise assume local storage path
+            else {
+                $imgUrl = asset(Storage::url($rawImage));
+            }
+        } else {
+            $imgUrl = asset('images/placeholder.png');
+        }
+
+        // ---------------------------------------------------------
+        // Description rendering:
+        // - Local/manual listings: keep as plain text (escape)
+        // - Relink/external listings: render HTML (sanitized allowlist)
+        // ---------------------------------------------------------
+        $isExternalRelink = ($medicalDevice->source ?? null) === 'relink';
+
+        $rawDesc = $medicalDevice->description ?? '';
+
+        if ($isExternalRelink) {
+            // Very lightweight sanitization via strip_tags allowlist.
+            // If you want stronger sanitization later: use HTMLPurifier package.
+            $allowed = '<p><br><b><strong><i><em><u><ul><ol><li><hr><h1><h2><h3><h4><h5><h6><span><div>';
+            $descHtml = strip_tags($rawDesc, $allowed);
+
+            // Remove event handlers / javascript: URLs (extra safety)
+            $descHtml = preg_replace('/on\w+="[^"]*"/i', '', $descHtml);
+            $descHtml = preg_replace("/on\w+='[^']*'/i", '', $descHtml);
+            $descHtml = preg_replace('/javascript:/i', '', $descHtml);
+        } else {
+            $descHtml = e($rawDesc); // plain text safe
+        }
+
+        $metaDesc = Str::limit(strip_tags($rawDesc), 160);
+    @endphp
+
     @push('head')
         <title>{{ $medicalDevice->name }} – Medical Device Marketplace</title>
-        <meta name="description" content="{{ Str::limit(strip_tags($medicalDevice->description), 160) }}">
+        <meta name="description" content="{{ $metaDesc }}">
         <meta name="robots" content="index, follow">
+
         <meta property="og:title" content="{{ $medicalDevice->name }} – Medical Device Marketplace">
-        <meta property="og:description" content="{{ Str::limit(strip_tags($medicalDevice->description), 160) }}">
-        <meta property="og:image" content="{{ $medicalDevice->image ? asset(Storage::url($medicalDevice->image)) : asset('images/placeholder.png') }}">
+        <meta property="og:description" content="{{ $metaDesc }}">
+        <meta property="og:image" content="{{ $imgUrl }}">
         <meta property="og:type" content="product">
         <meta property="og:url" content="{{ url()->current() }}">
+
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{{ $medicalDevice->name }} – Medical Device Marketplace">
-        <meta name="twitter:description" content="{{ Str::limit(strip_tags($medicalDevice->description), 160) }}">
-        <meta name="twitter:image" content="{{ $medicalDevice->image ? asset(Storage::url($medicalDevice->image)) : asset('images/placeholder.png') }}">
+        <meta name="twitter:description" content="{{ $metaDesc }}">
+        <meta name="twitter:image" content="{{ $imgUrl }}">
     @endpush
 
     <x-slot name="header">
@@ -27,7 +78,7 @@
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                 {{-- Image --}}
                 <div class="h-64 md:h-96 bg-gray-100">
-                    <img src="{{ $medicalDevice->image ? Storage::url($medicalDevice->image) : asset('images/placeholder.png') }}"
+                    <img src="{{ $imgUrl }}"
                          alt="{{ $medicalDevice->name }}"
                          class="w-full h-full object-cover">
                 </div>
@@ -40,6 +91,8 @@
                         @if($medicalDevice->brand)
                             <p class="text-sm text-gray-500">Brand: <span class="font-medium text-gray-700">{{ $medicalDevice->brand }}</span></p>
                         @endif
+
+
                     </div>
 
                     {{-- Pricing --}}
@@ -69,10 +122,18 @@
                     </div>
 
                     {{-- Description --}}
-                    @if($medicalDevice->description)
+                    @if($rawDesc)
                         <div>
                             <h4 class="text-sm font-semibold uppercase text-gray-500 mb-1">Description</h4>
-                            <p class="text-gray-700 text-sm leading-relaxed">{{ $medicalDevice->description }}</p>
+
+                            {{-- If external relink: render sanitized HTML, else plain text --}}
+                            @if($isExternalRelink)
+                                <div class="prose prose-sm max-w-none text-gray-700">
+                                    {!! $descHtml !!}
+                                </div>
+                            @else
+                                <p class="text-gray-700 text-sm leading-relaxed">{{ $medicalDevice->description }}</p>
+                            @endif
                         </div>
                     @endif
 
@@ -167,8 +228,8 @@
                     "@context": "https://schema.org",
                     "@type": "Product",
                     "name": "{{ $medicalDevice->name }}",
-                    "image": ["{{ $medicalDevice->image ? asset(Storage::url($medicalDevice->image)) : asset('images/placeholder.png') }}"],
-                    "description": "{{ Str::limit(strip_tags($medicalDevice->description), 160) }}",
+                    "image": ["{{ $imgUrl }}"],
+                    "description": "{{ $metaDesc }}",
                     "sku": "MD-{{ $medicalDevice->id }}",
                     "brand": {
                         "@type": "Brand",

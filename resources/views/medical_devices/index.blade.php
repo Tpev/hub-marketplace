@@ -1,5 +1,7 @@
 {{-- resources/views/medical_devices/index.blade.php --}}
 <x-app-layout>
+
+
     <x-slot name="header">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between">
             <h2 class="text-2xl font-bold text-gray-800">
@@ -12,7 +14,9 @@
     </x-slot>
 
     @php
-        $licensed = auth()->check() && method_exists(auth()->user(), 'hasActiveLicense') && auth()->user()->hasActiveLicense();
+        $licensed = auth()->check()
+            && method_exists(auth()->user(), 'hasActiveLicense')
+            && auth()->user()->hasActiveLicense();
     @endphp
 
     <div class="py-12 bg-gray-50">
@@ -82,13 +86,33 @@
             {{-- Devices Grid --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($devices as $device)
+                    @php
+                        // -------------------------------------------------
+                        // Image resolver (local OR external OR placeholder)
+                        // -------------------------------------------------
+                        $rawImage = $device->image;
+
+                        if ($rawImage) {
+                            if (Str::startsWith($rawImage, ['http://', 'https://'])) {
+                                $imgUrl = $rawImage;
+                            } elseif (Str::startsWith($rawImage, '//')) {
+                                $imgUrl = 'https:' . $rawImage;
+                            } else {
+                                $imgUrl = asset(Storage::url($rawImage));
+                            }
+                        } else {
+                            $imgUrl = asset('images/placeholder.png');
+                        }
+                    @endphp
+
                     <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden border border-gray-100 flex flex-col">
                         {{-- Image --}}
                         <div class="h-48 bg-gray-100 relative">
                             <img
-                                src="{{ $device->image ? Storage::url($device->image) : asset('images/placeholder.png') }}"
+                                src="{{ $imgUrl }}"
                                 alt="{{ $device->name }}"
                                 class="w-full h-full object-cover"
+                                loading="lazy"
                             >
                         </div>
 
@@ -96,15 +120,21 @@
                         <div class="p-4 flex-1 flex flex-col">
                             {{-- Device Name --}}
                             <div>
-                                <div class="text-xs uppercase tracking-wide text-gray-500 font-medium">Device</div>
+                                <div class="text-xs uppercase tracking-wide text-gray-500 font-medium">
+                                    Device
+                                </div>
                                 <h3 class="text-lg font-semibold text-gray-800 truncate">
                                     {{ $device->name }}
                                 </h3>
+
+
                             </div>
 
                             {{-- Price Section --}}
                             <div class="mt-3 space-y-1">
-                                <div class="text-xs uppercase tracking-wide text-gray-500 font-medium">Pricing</div>
+                                <div class="text-xs uppercase tracking-wide text-gray-500 font-medium">
+                                    Pricing
+                                </div>
 
                                 @if($device->price_new)
                                     <div class="text-sm text-gray-500">
@@ -114,13 +144,18 @@
 
                                     <div class="text-sm text-gray-700">
                                         <span class="font-medium">Seller’s Price:</span>
-                                        <span class="text-green-700 font-bold text-lg">${{ number_format($device->price, 2) }}</span>
+                                        <span class="text-green-700 font-bold text-lg">
+                                            ${{ number_format($device->price, 2) }}
+                                        </span>
                                     </div>
 
                                     @php
                                         $save = max(0, ($device->price_new - $device->price));
-                                        $pct  = $device->price_new > 0 ? round(($save / $device->price_new) * 100) : 0;
+                                        $pct  = $device->price_new > 0
+                                            ? round(($save / $device->price_new) * 100)
+                                            : 0;
                                     @endphp
+
                                     @if($save > 0)
                                         <div class="mt-1">
                                             <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
@@ -131,7 +166,9 @@
                                 @else
                                     <div class="text-sm text-gray-700">
                                         <span class="font-medium">Seller’s Price:</span>
-                                        <span class="text-green-700 font-bold text-lg">${{ number_format($device->price, 2) }}</span>
+                                        <span class="text-green-700 font-bold text-lg">
+                                            ${{ number_format($device->price, 2) }}
+                                        </span>
                                     </div>
                                 @endif
                             </div>
@@ -149,15 +186,9 @@
                                         <div>📍 {{ $device->location }}</div>
 
                                         @if(!is_null($device->shipping_available))
-                                            @if($device->shipping_available)
-                                                <span class="inline-block bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full mt-1">
-                                                    Shipping Available
-                                                </span>
-                                            @else
-                                                <span class="inline-block bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full mt-1">
-                                                    Pickup Only
-                                                </span>
-                                            @endif
+                                            <span class="inline-block mt-1 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                                                {{ $device->shipping_available ? 'Shipping Available' : 'Pickup Only' }}
+                                            </span>
                                         @endif
                                     </div>
                                 @endif
@@ -196,7 +227,7 @@
             </div>
 
             {{-- Buyer Inquiry Form --}}
-            @if(auth()->guest() || (auth()->check() && (auth()->user()->intent === 'Buyer')))
+            @if(auth()->guest() || (auth()->check() && auth()->user()->intent === 'Buyer'))
                 <div class="mt-16 max-w-2xl mx-auto bg-white border border-green-100 rounded-xl shadow p-8">
                     <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">
                         Can’t find the device you’re looking for?
@@ -205,51 +236,30 @@
                         Tell us what you need and we’ll notify our verified sellers.
                     </p>
 
-                    @if(session('success'))
-                        <div class="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded mb-4 text-sm text-center">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
                     {!! NoCaptcha::renderJs() !!}
 
                     <form action="{{ route('buyer-inquiries.store') }}" method="POST" class="space-y-5">
                         @csrf
 
                         <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-                            <input
-                                type="text"
-                                name="name"
-                                id="name"
-                                required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 shadow-sm"
-                            >
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                            <input type="text" name="name" required
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500">
                         </div>
 
                         <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Your Email</label>
-                            <input
-                                type="email"
-                                name="email"
-                                id="email"
-                                required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 shadow-sm"
-                            >
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Your Email</label>
+                            <input type="email" name="email" required
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500">
                         </div>
 
                         <div>
-                            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
                                 What are you looking for?
                             </label>
-                            <textarea
-                                name="message"
-                                id="message"
-                                rows="4"
-                                required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 shadow-sm"
-                                placeholder="Describe the device or model you're searching for..."
-                            ></textarea>
+                            <textarea name="message" rows="4" required
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                                      placeholder="Describe the device or model you're searching for..."></textarea>
                         </div>
 
                         <div>
@@ -260,10 +270,8 @@
                         </div>
 
                         <div class="text-center">
-                            <button
-                                type="submit"
-                                class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-md shadow transition"
-                            >
+                            <button type="submit"
+                                    class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-md shadow transition">
                                 Submit Inquiry
                             </button>
                         </div>
