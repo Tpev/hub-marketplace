@@ -123,7 +123,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Admin
     Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-
+    // Update user license (status + tier)
+    Route::patch('/admin/users/{user}/license', [AdminController::class, 'updateUserLicense'])
+        ->name('admin.users.license.update');
     // (Existant) Back-office blog sous /admin/blog
     Route::prefix('admin/blog')->name('admin.blog.')->group(function () {
         // NOTE: la ressource sur "/" est atypique mais je garde ta structure
